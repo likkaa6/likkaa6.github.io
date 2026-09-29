@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Інтерактивний скринінг та клінічний аналіз: Рання діагностика залежності
+    </title>
+
+    <!-- Roboto Font & Material Icons -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+
+    <!-- React & React DOM -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+      crossorigin
+    ></script>
+
+    <!-- Emotion (Обов'язкові залежності для Material UI v5) -->
+    <script
+      src="https://unpkg.com/@emotion/react@11/umd/emotion-react.umd.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/@emotion/styled@11/umd/emotion-styled.umd.min.js"
+      crossorigin
+    ></script>
+
+    <!-- Babel Translator -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Material UI v5 (Зафіксована робоча версія) -->
+    <script
+      src="https://unpkg.com/@mui/material@5.15.15/umd/material-ui.production.min.js"
+      crossorigin
+    ></script>
+
+    <style>
+      html {
+        font-size: 18px; /* Увеличен базовый размер шрифта */
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f6f9;
+        font-family: "Roboto", sans-serif;
+        color: #2c3e50;
+        font-size: 1.2rem;
+      }
+      .hero-banner {
+        background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 28px;
+      }
+      .card-hover {
+        transition:
+          transform 0.2s ease-in-out,
+          box-shadow 0.2s ease-in-out;
+      }
+      .card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+      .question-card {
+        border-left: 6px solid #1976d2;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const {
+        ThemeProvider,
+        createTheme,
+        CssBaseline,
+        AppBar,
+        Toolbar,
+        Typography,
+        Container,
+        Box,
+        Paper,
+        Grid,
+        Button,
+        Card,
+        CardContent,
+        Radio,
+        RadioGroup,
+        FormControlLabel,
+        FormControl,
+        Alert,
+        AlertTitle,
+        Chip,
+        List,
+        ListItem,
+        ListItemIcon,
+        ListItemText,
+        Divider,
+        Tab,
+        Tabs,
+        LinearProgress,
+        CardHeader,
+        Avatar,
+      } = MaterialUI;
+
+      // Настройка увеличенного шрифта (~1.5x)
+      const theme = createTheme({
+        palette: {
+          primary: { main: "#1976d2" },
+          secondary: { main: "#00897b" },
+          warning: { main: "#ed6c02" },
+          error: { main: "#d32f2f" },
+          success: { main: "#2e7d32" },
+          background: { default: "#f4f6f9" },
+        },
+        typography: {
+          fontSize: 20,
+          h4: { fontWeight: 700, fontSize: "2.6rem" },
+          h5: { fontWeight: 700, fontSize: "2.1rem" },
+          h6: { fontWeight: 600, fontSize: "1.75rem" },
+          subtitle1: { fontWeight: 600, fontSize: "1.4rem" },
+          subtitle2: { fontSize: "1.25rem" },
+          body1: { fontSize: "1.25rem", lineHeight: 1.6 },
+          body2: { fontSize: "1.15rem", lineHeight: 1.5 },
+          button: { fontSize: "1.2rem", fontWeight: 600 },
+          caption: { fontSize: "1.05rem" },
+        },
+      });
+
+      const questionsData = [
+        {
+          id: 1,
+          question:
+            '1. Чи буває так, що ви чекаєте вечора/вихідних виключно заради того, щоб нарешті "розслабитися" за допомогою речовини чи таблетки?',
+          insight:
+            "Фіксація на очікуванні вживання як єдиного джерела дофаміну.",
+        },
+        {
+          id: 2,
+          question:
+            '2. Чи ловили ви себе на думці: "Я можу кинути будь-якої миті, просто зараз не найкращий час"?',
+          insight: "Ілюзія контролю та класичний психологічний захист.",
+        },
+        {
+          id: 3,
+          question:
+            '3. Чи доводилося вам шукати "наукові" статті про користь вашого способу вживання, щоб виправдатися перед собою чи іншими?',
+          insight: "Раціоналізація поведінки залежності.",
+        },
+        {
+          id: 4,
+          question:
+            "4. Чи відчуваєте ви провину чи сором після вживання, але все одно повторюєте це через кілька днів?",
+          insight:
+            "Замкнене коло: Провина → Тривога → Вживання для зняття тривоги.",
+        },
+        {
+          id: 5,
+          question:
+            '5. Чи з\'явилося у вас правило: "Сьогодні точно ні", яке ви порушуєте вже до вечора?',
+          insight: "Втрата контролю та компульсивність.",
+        },
+        {
+          id: 6,
+          question:
+            "6. Чи помічали ви, що без речовини/стимулятора ви стаєте нудним, роздратованим для оточуючих?",
+          insight:
+            "Зсув базового емоційного плато — людина твереза відчувається нижче за норму.",
+        },
+        {
+          id: 7,
+          question:
+            '7. Чи відміняли ви зустрічі, спорт чи навчання, бо почувалися погано після "вчорашнього"?',
+          insight:
+            "Зміна пріоритетів: речовина починає диктувати графік життя.",
+        },
+        {
+          id: 8,
+          question:
+            '8. Чи є у вас речовини чи ліки, які ви ховаєте в рюкзаку, машині чи кімнаті "про всяк випадок"?',
+          insight:
+            'Поведінка "страхування" — виникнення паніки за відсутності доступу.',
+        },
+        {
+          id: 9,
+          question:
+            '9. Чи доводиться вам підвищувати "дозу" або змінювати речовину, бо стара вже "не вставляє так, як раніше"?',
+          insight:
+            "Наочна толерантність — десенсибілізація рецепторного апарату.",
+        },
+        {
+          id: 10,
+          question:
+            "10. Чи ловили ви себе на тому, що брешете лікареві або друзям про реальну частоту та обсяги вживання?",
+          insight: 'Формування "подвійного життя" та соціальної маски.',
+        },
+      ];
+
+      function App() {
+        const [tabValue, setTabValue] = React.useState(0);
+        const [answers, setAnswers] = React.useState({});
+        const [submitted, setSubmitted] = React.useState(false);
+
+        const handleTabChange = (event, newValue) => {
+          setTabValue(newValue);
+        };
+
+        const handleOptionChange = (qId, val) => {
+          setAnswers((prev) => ({ ...prev, [qId]: val }));
+        };
+
+        const calculateScore = () => {
+          return Object.values(answers).reduce(
+            (acc, curr) => acc + (curr === "yes" ? 1 : 0),
+            0,
+          );
+        };
+
+        const answeredCount = Object.keys(answers).length;
+        const score = calculateScore();
+
+        const resetTest = () => {
+          setAnswers({});
+          setSubmitted(false);
+        };
+
+        return (
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+
+            {/* Navigation Bar */}
+            <AppBar position="static" elevation={2}>
+              <Toolbar sx={{ py: 1 }}>
+                <span
+                  className="material-icons"
+                  style={{ marginRight: 14, fontSize: 36 }}
+                >
+                  medical_services
+                </span>
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{ flexGrow: 1, fontSize: "1.5rem" }}
+                >
+                  Медична лекція: Рання діагностика залежності
+                </Typography>
+                <Chip
+                  label="Собко Ліка 4 курс 6 а група"
+                  color="secondary"
+                  size="medium"
+                  sx={{ fontSize: "1rem", p: 1 }}
+                />
+                <Chip
+                  label="Студентський проект"
+                  color="secondary"
+                  size="medium"
+                  sx={{ fontSize: "1rem", p: 1, ml: 1 }}
+                />
+              </Toolbar>
+            </AppBar>
+
+            {/* Banner */}
+            <Box className="hero-banner">
+              <Container maxWidth="lg">
+                <Typography variant="h4" gutterBottom>
+                  Інтерактивний скринінг та клінічна презентація
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ opacity: 0.95, maxWidth: 900, fontSize: "1.35rem" }}
+                >
+                  Ресурс розроблено для виявлення високофункціональної
+                  залежності на ранніх етапах, аналізу нейробіологічних
+                  механізмів та надання маршруту допомоги пацієнтам.
+                </Typography>
+              </Container>
+            </Box>
+
+            <Container maxWidth="lg" sx={{ mb: 8 }}>
+              {/* Tabs */}
+              <Paper sx={{ mb: 4 }}>
+                <Tabs
+                  value={tabValue}
+                  onChange={handleTabChange}
+                  indicatorColor="primary"
+                  textColor="primary"
+                  variant="fullWidth"
+                >
+                  <Tab
+                    icon={
+                      <span className="material-icons" style={{ fontSize: 28 }}>
+                        assignment
+                      </span>
+                    }
+                    label={
+                      <span style={{ fontSize: "1.2rem" }}>
+                        1. Інтерактивний Тест
+                      </span>
+                    }
+                  />
+                  <Tab
+                    icon={
+                      <span className="material-icons" style={{ fontSize: 28 }}>
+                        psychology
+                      </span>
+                    }
+                    label={
+                      <span style={{ fontSize: "1.2rem" }}>
+                        2. Нейробіологія & Лекція
+                      </span>
+                    }
+                  />
+                  <Tab
+                    icon={
+                      <span className="material-icons" style={{ fontSize: 28 }}>
+                        health_and_safety
+                      </span>
+                    }
+                    label={
+                      <span style={{ fontSize: "1.2rem" }}>
+                        3. Маршрут допомоги & Поради
+                      </span>
+                    }
+                  />
+                </Tabs>
+              </Paper>
+
+              {/* TAB 1: QUESTIONNAIRE */}
+              {tabValue === 0 && (
+                <Box>
+                  <Paper sx={{ p: 4, mb: 4 }}>
+                    <Typography variant="h6" color="primary" gutterBottom>
+                      Скринінгова анкета (10 життєвих запитань)
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary" paragraph>
+                      Цей опитувальник допомагає виявити перші неочевидні
+                      симптоми та подолати анозогнозію (заперечення хвороби).
+                      Дані відповіді не зберігаються та обробляються виключно у
+                      вашому браузері.
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={(answeredCount / 10) * 100}
+                      sx={{ height: 12, borderRadius: 6, mb: 1.5 }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      sx={{ fontSize: "1.1rem" }}
+                    >
+                      Дано відповідей: {answeredCount} з 10
+                    </Typography>
+                  </Paper>
+
+                  {questionsData.map((q) => (
+                    <Card key={q.id} className="question-card card-hover">
+                      <CardContent sx={{ p: 3 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 600, mb: 1.5, fontSize: "1.35rem" }}
+                        >
+                          {q.question}
+                        </Typography>
+                        <FormControl component="fieldset">
+                          <RadioGroup
+                            row
+                            value={answers[q.id] || ""}
+                            onChange={(e) =>
+                              handleOptionChange(q.id, e.target.value)
+                            }
+                          >
+                            <FormControlLabel
+                              value="yes"
+                              control={
+                                <Radio
+                                  color="error"
+                                  sx={{
+                                    "& .MuiSvgIcon-root": { fontSize: 28 },
+                                  }}
+                                />
+                              }
+                              label={
+                                <span style={{ fontSize: "1.25rem" }}>Так</span>
+                              }
+                              sx={{ mr: 4 }}
+                            />
+                            <FormControlLabel
+                              value="no"
+                              control={
+                                <Radio
+                                  color="success"
+                                  sx={{
+                                    "& .MuiSvgIcon-root": { fontSize: 28 },
+                                  }}
+                                />
+                              }
+                              label={
+                                <span style={{ fontSize: "1.25rem" }}>Ні</span>
+                              }
+                            />
+                          </RadioGroup>
+                        </FormControl>
+                        {answers[q.id] && (
+                          <Box
+                            sx={{
+                              mt: 2,
+                              p: 2,
+                              bgcolor: "#f0f4f8",
+                              borderRadius: 1.5,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: "1.15rem",
+                              }}
+                            >
+                              <span
+                                className="material-icons"
+                                style={{
+                                  fontSize: 22,
+                                  marginRight: 8,
+                                  color: "#1976d2",
+                                }}
+                              >
+                                info
+                              </span>
+                              <strong>Клінічний маркер:</strong> &nbsp;{" "}
+                              {q.insight}
+                            </Typography>
+                          </Box>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  <Box sx={{ textAlign: "center", mt: 5 }}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      color="primary"
+                      disabled={answeredCount < 10}
+                      onClick={() => setSubmitted(true)}
+                      startIcon={
+                        <span
+                          className="material-icons"
+                          style={{ fontSize: 28 }}
+                        >
+                          analytics
+                        </span>
+                      }
+                      sx={{ px: 5, py: 2, fontSize: "1.3rem" }}
+                    >
+                      Отримати висновок та розшифровку
+                    </Button>
+                  </Box>
+
+                  {/* RESULTS SECTION */}
+                  {submitted && (
+                    <Paper
+                      sx={{
+                        p: 5,
+                        mt: 5,
+                        bgcolor: "#fff",
+                        borderTop: "8px solid #1976d2",
+                      }}
+                      elevation={4}
+                    >
+                      <Typography
+                        variant="h5"
+                        gutterBottom
+                        color="primary"
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        <span
+                          className="material-icons"
+                          style={{ marginRight: 12, fontSize: 40 }}
+                        >
+                          fact_check
+                        </span>
+                        Результати скринінгу
+                      </Typography>
+
+                      <Box sx={{ my: 3 }}>
+                        <Chip
+                          label={`Ваш результат: ${score} з 10 позитивних відповідей`}
+                          color={
+                            score >= 5
+                              ? "error"
+                              : score >= 2
+                                ? "warning"
+                                : "success"
+                          }
+                          sx={{ fontSize: "1.25rem", p: 2.5, height: "auto" }}
+                        />
+                      </Box>
+
+                      {score <= 1 && (
+                        <Alert
+                          severity="success"
+                          sx={{ mb: 3, fontSize: "1.15rem" }}
+                        >
+                          <AlertTitle sx={{ fontSize: "1.3rem" }}>
+                            Низький рівень ризику (0–1 бал)
+                          </AlertTitle>
+                          Ознак формування залежності не виявлено. Ви зберігаєте
+                          здорові копінг-механізми та контроль над поведінкою.
+                        </Alert>
+                      )}
+
+                      {score >= 2 && score <= 4 && (
+                        <Alert
+                          severity="warning"
+                          sx={{ mb: 3, fontSize: "1.15rem" }}
+                        >
+                          <AlertTitle sx={{ fontSize: "1.3rem" }}>
+                            Помірний рівень / Початкові маркери (2–4 бали)
+                          </AlertTitle>
+                          Присутні ранні ознаки психологічного захисту
+                          (раціоналізація, ілюзія контролю) або початкова
+                          десенсибілізація рецепторного апарату. Зверніть увагу
+                          на джерела зняття стресу.
+                        </Alert>
+                      )}
+
+                      {score >= 5 && (
+                        <Alert
+                          severity="error"
+                          sx={{ mb: 3, fontSize: "1.15rem" }}
+                        >
+                          <AlertTitle sx={{ fontSize: "1.3rem" }}>
+                            Високий ризик високофункціональної залежності (5+
+                            балів)
+                          </AlertTitle>
+                          Виявлено чіткі клінічні маркери: зсув базового
+                          емоційного плато, зростання толерантності та
+                          формування "подвійного життя". Рекомендовано анонімну
+                          консультацію зі спеціалістом.
+                        </Alert>
+                      )}
+
+                      <Divider sx={{ my: 4 }} />
+
+                      <Typography variant="h6" gutterBottom>
+                        Нейробіологічний та клінічний висновок:
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        paragraph
+                        color="textSecondary"
+                      >
+                        Залежність у 21-му столітті починається не з "втрати
+                        соціального дна", а з неочевидних змін: рання
+                        десенсибілізація D2-дофамінових рецепторів та адаптація
+                        глутаматергічної системи роблять тверезий стан відчутно
+                        "нижчим за норму". Речовина перестає бути способом
+                        отримати задоволення і стає єдиним інструментом
+                        повернення до базового "нуля".
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          mt: 4,
+                          display: "flex",
+                          gap: 3,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="large"
+                          onClick={resetTest}
+                          sx={{ px: 3, py: 1.5 }}
+                        >
+                          Пройти повторно
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          size="large"
+                          onClick={() => setTabValue(2)}
+                          sx={{ px: 3, py: 1.5 }}
+                        >
+                          Переглянути контакти допомоги
+                        </Button>
+                      </Box>
+                    </Paper>
+                  )}
+                </Box>
+              )}
+
+              {/* TAB 2: LECTURE / PRESENTATION CONTENT */}
+              {tabValue === 1 && (
+                <Box>
+                  <Paper sx={{ p: 5, mb: 4 }}>
+                    <Typography variant="h5" color="primary" gutterBottom>
+                      А як виглядає пацієнт із залежністю на самому початку?
+                    </Typography>
+                    <Typography variant="body1" paragraph>
+                      У підручниках нам часто показують крайні стадії. Але у
+                      реальному житті 21-го століття наркоманія мімікрує. Вона
+                      не починається з перебування у поганій компанії чи
+                      нарко-притону.
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      paragraph
+                      sx={{
+                        fontWeight: 500,
+                        color: "#1565c0",
+                        fontSize: "1.3rem",
+                      }}
+                    >
+                      Вона починається у кав'ярнях, на онлайн-лекціях, в
+                      IT-офісах і, будьмо відвертими, серед студентів-медиків.
+                      Це так звана{" "}
+                      <strong>високофункціональна залежність</strong>.
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary">
+                      Щоб виявити її до того, як пацієнт потрапить у реанімацію
+                      чи психіатрію, необхідно звертати увагу на 10 життєвих
+                      запитань, які змушують людину визнати існування проблеми.
+                    </Typography>
+                  </Paper>
+
+                  <Grid container spacing={4} sx={{ mb: 4 }}>
+                    <Grid item xs={12} md={6}>
+                      <Card sx={{ height: "100%", p: 1 }}>
+                        <CardHeader
+                          avatar={
+                            <Avatar
+                              sx={{ bgcolor: "#1976d2", width: 50, height: 50 }}
+                            >
+                              <span
+                                className="material-icons"
+                                style={{ fontSize: 30 }}
+                              >
+                                science
+                              </span>
+                            </Avatar>
+                          }
+                          title={
+                            <Typography variant="h6">
+                              Нейробіологія & Неочевидні симптоми
+                            </Typography>
+                          }
+                        />
+                        <CardContent>
+                          <Typography variant="body1" paragraph>
+                            З погляду нейробіології — це не просто «погана
+                            звичка». Це{" "}
+                            <strong>
+                              рання десенсибілізація D2-дофамінових рецепторів
+                            </strong>{" "}
+                            та{" "}
+                            <strong>адаптація глутаматергічної системи</strong>.
+                          </Typography>
+                          <Typography variant="body1" paragraph>
+                            Мозок втрачає здатність отримувати задоволення від
+                            базових стимулів — їжі, навчання, спорту. Наркотик
+                            стає не способом отримати кайф, а єдиним
+                            копінг-механізмом, щоб повернутися на рівень "нуля"
+                            з мінусового емоційного стану.
+                          </Typography>
+                          <Typography variant="body1">
+                            <strong>Анозогнозія</strong> — заперечення хвороби —
+                            це перший клінічний симптом залежності. Якщо ми
+                            шукатимемо лише сліди від ін'єкцій чи звужені
+                            зіниці, ми пропустимо 90% пацієнтів[cite: 1].
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Card sx={{ height: "100%", p: 1 }}>
+                        <CardHeader
+                          avatar={
+                            <Avatar
+                              sx={{ bgcolor: "#ed6c02", width: 50, height: 50 }}
+                            >
+                              <span
+                                className="material-icons"
+                                style={{ fontSize: 30 }}
+                              >
+                                warning
+                              </span>
+                            </Avatar>
+                          }
+                          title={
+                            <Typography variant="h6">
+                              Чому це актуально для лікарів зараз?
+                            </Typography>
+                          }
+                        />
+                        <CardContent>
+                          <List>
+                            <ListItem sx={{ py: 1.5 }}>
+                              <ListItemIcon>
+                                <span
+                                  className="material-icons"
+                                  style={{ color: "#ed6c02", fontSize: 32 }}
+                                >
+                                  medication
+                                </span>
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <Typography variant="subtitle1">
+                                    1. Еволюція речовин
+                                  </Typography>
+                                }
+                                secondary={
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                  >
+                                    На зміну «класиці» прийшли синтетичні
+                                    речовини (солі, мефедрон) та аптечна
+                                    наркоманія (прегабалін, кодеїнові мікси).
+                                    Фізичні сліди майже непомітні.
+                                  </Typography>
+                                }
+                              />
+                            </ListItem>
+                            <ListItem sx={{ py: 1.5 }}>
+                              <ListItemIcon>
+                                <span
+                                  className="material-icons"
+                                  style={{ color: "#ed6c02", fontSize: 32 }}
+                                >
+                                  psychology_alt
+                                </span>
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <Typography variant="subtitle1">
+                                    2. Хронічний стрес та війна
+                                  </Typography>
+                                }
+                                secondary={
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                  >
+                                    Рівень тривоги в суспільстві колосальний.
+                                    Вживання стає 'швидкою самофармакотерапією'.
+                                  </Typography>
+                                }
+                              />
+                            </ListItem>
+                            <ListItem sx={{ py: 1.5 }}>
+                              <ListItemIcon>
+                                <span
+                                  className="material-icons"
+                                  style={{ color: "#ed6c02", fontSize: 32 }}
+                                >
+                                  local_hospital
+                                </span>
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <Typography variant="subtitle1">
+                                    3. Лікарська відповідальність
+                                  </Typography>
+                                }
+                                secondary={
+                                  <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                  >
+                                    Пацієнт прийде з безсонням, аритмією чи
+                                    гастритом. Нерозпізнана першопричина
+                                    загрожує небезпечною фармакологічною
+                                    несумісністю.
+                                  </Typography>
+                                }
+                              />
+                            </ListItem>
+                          </List>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  </Grid>
+
+                  {/* Prevention Levels */}
+                  <Paper sx={{ p: 5 }}>
+                    <Typography variant="h6" color="primary" gutterBottom>
+                      Три рівні профілактики та запобігання
+                    </Typography>
+                    <Grid container spacing={3} sx={{ mt: 1 }}>
+                      <Grid item xs={12} md={4}>
+                        <Box
+                          sx={{
+                            p: 3,
+                            border: "1px solid #e0e0e0",
+                            borderRadius: 2,
+                            height: "100%",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            Первинний рівень
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            sx={{ mt: 1 }}
+                          >
+                            Дестигматизація та інтерактивний скринінг. Анонімний
+                            тест із 10 запитань дає змогу людині вперше побачити
+                            реальність без прикрас.
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <Box
+                          sx={{
+                            p: 3,
+                            border: "1px solid #e0e0e0",
+                            borderRadius: 2,
+                            height: "100%",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            color="secondary"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            Вторинний рівень
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            sx={{ mt: 1 }}
+                          >
+                            Мотивація та довіра між лікарем і пацієнтом.
+                            Спілкування без агресії та ярлику «ти наркоман».
+                            Показ розбіжностей між цілями й поведінкою.
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <Box
+                          sx={{
+                            p: 3,
+                            border: "1px solid #e0e0e0",
+                            borderRadius: 2,
+                            height: "100%",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            color="error"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            Третинний рівень
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            sx={{ mt: 1 }}
+                          >
+                            Вчасне перенаправлення. Залежність —
+                            мультидисциплінарна патологія (робота наркологів,
+                            психотерапевтів та систем підтримки).
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    <Box
+                      sx={{ mt: 4, p: 3, bgcolor: "#e3f2fd", borderRadius: 2 }}
+                    >
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontStyle: "italic",
+                          textAlign: "center",
+                          fontSize: "1.3rem",
+                        }}
+                      >
+                        «Залежність починається не з голки. Вона починається з
+                        думки: "Я роблю це востаннє, просто щоб зняти стрес".
+                        Завдання лікаря — перехопити людину на цій першій
+                        думці.»
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Box>
+              )}
+
+              {/* TAB 3: HELP & CONTACTS */}
+              {tabValue === 2 && (
+                <Box>
+                  {/* Specialists Referral */}
+                  <Typography
+                    variant="h5"
+                    color="primary"
+                    gutterBottom
+                    sx={{ mb: 3 }}
+                  >
+                    Маршрутизація пацієнта: До кого звертатися
+                  </Typography>
+                  <Grid container spacing={3} sx={{ mb: 5 }}>
+                    <Grid item xs={12} md={4}>
+                      <Paper
+                        sx={{
+                          p: 4,
+                          height: "100%",
+                          borderTop: "5px solid #1976d2",
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{ display: "flex", alignItems: "center" }}
+                        >
+                          <span
+                            className="material-icons"
+                            style={{
+                              marginRight: 10,
+                              color: "#1976d2",
+                              fontSize: 32,
+                            }}
+                          >
+                            person_pin
+                          </span>
+                          Сімейний лікар
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Первинний огляд, оцінка соматичного стану, виявлення
+                          супутніх патологій та направлення до вузьких фахівців.
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Paper
+                        sx={{
+                          p: 4,
+                          height: "100%",
+                          borderTop: "5px solid #00897b",
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{ display: "flex", alignItems: "center" }}
+                        >
+                          <span
+                            className="material-icons"
+                            style={{
+                              marginRight: 10,
+                              color: "#00897b",
+                              fontSize: 32,
+                            }}
+                          >
+                            psychology
+                          </span>
+                          Психіатр / Нарколог
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Медикаментозна корекція нейрохімії мозку (нормалізація
+                          сну, зняття тривоги, синдрому відміни та тяги).
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Paper
+                        sx={{
+                          p: 4,
+                          height: "100%",
+                          borderTop: "5px solid #9c27b0",
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{ display: "flex", alignItems: "center" }}
+                        >
+                          <span
+                            className="material-icons"
+                            style={{
+                              marginRight: 10,
+                              color: "#9c27b0",
+                              fontSize: 32,
+                            }}
+                          >
+                            forum
+                          </span>
+                          Психотерапевт (КПТ)
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Опрацювання психологічних тригерів, розрив
+                          компульсивних думок та формування нових поведінкових
+                          звичок.
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+
+                  {/* Contacts in Ukraine */}
+                  <Paper sx={{ p: 5, mb: 5 }}>
+                    <Typography
+                      variant="h6"
+                      color="primary"
+                      gutterBottom
+                      sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                    >
+                      <span
+                        className="material-icons"
+                        style={{ marginRight: 10, fontSize: 32 }}
+                      >
+                        phone_in_talk
+                      </span>
+                      Контакти допомоги в Україні
+                    </Typography>
+                    <List>
+                      <ListItem divider sx={{ py: 2 }}>
+                        <ListItemIcon>
+                          <span
+                            className="material-icons"
+                            style={{ color: "#d32f2f", fontSize: 32 }}
+                          >
+                            call
+                          </span>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              Національна гаряча лінія з питань залежностей
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="textSecondary">
+                              0 800 507 727 — безкоштовно та анонімно
+                              (zpt.in.ua)
+                            </Typography>
+                          }
+                        />
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="large"
+                          href="tel:0800507727"
+                        >
+                          Зателефонувати
+                        </Button>
+                      </ListItem>
+                      <ListItem divider sx={{ py: 2 }}>
+                        <ListItemIcon>
+                          <span
+                            className="material-icons"
+                            style={{ color: "#1976d2", fontSize: 32 }}
+                          >
+                            support_agent
+                          </span>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              Психологічна підтримка (Національна психологічна
+                              асоціація - НПА)
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="textSecondary">
+                              1588 / 0 800 211 444 (npa-ua.org)
+                            </Typography>
+                          }
+                        />
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="large"
+                          href="tel:1588"
+                        >
+                          Зателефонувати
+                        </Button>
+                      </ListItem>
+                      <ListItem sx={{ py: 2 }}>
+                        <ListItemIcon>
+                          <span
+                            className="material-icons"
+                            style={{ color: "#00897b", fontSize: 32 }}
+                          >
+                            groups
+                          </span>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              Спільнота «Анонімні Наркомани» в Україні
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="textSecondary">
+                              Групи взаємодопомоги та підтримки (npa-ua.org)
+                            </Typography>
+                          }
+                        />
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          size="large"
+                          href="https://npa-ua.org"
+                          target="_blank"
+                        >
+                          Перейти на сайт
+                        </Button>
+                      </ListItem>
+                    </List>
+                  </Paper>
+
+                  {/* Advice for Relatives */}
+                  <Paper sx={{ p: 5 }}>
+                    <Typography
+                      variant="h6"
+                      color="primary"
+                      gutterBottom
+                      sx={{ mb: 3 }}
+                    >
+                      Як правильно дати пораду та допомогти близькій людині
+                    </Typography>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6}>
+                        <Card variant="outlined" sx={{ height: "100%" }}>
+                          <CardContent sx={{ p: 3 }}>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{ fontWeight: 600, color: "#1565c0" }}
+                            >
+                              1. Говоріть лише у тверезий момент
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ mt: 1 }}
+                            >
+                              Не починайте розмову, коли людина все ще перебуває
+                              під дією наркотичних речовин.
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Card variant="outlined" sx={{ height: "100%" }}>
+                          <CardContent sx={{ p: 3 }}>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{ fontWeight: 600, color: "#1565c0" }}
+                            >
+                              2. Використовуйте «Я-повідомлення»
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ mt: 1 }}
+                            >
+                              Замість звинувачень («Ти знищуєш себе») кажіть про
+                              свої почуття («Я дуже хвилююся за твоє здоров'я»).
+                              Звучить маніпулятивно, але це дієвий спосіб
+                              змусити людину вийти з бульбашки.
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Card variant="outlined" sx={{ height: "100%" }}>
+                          <CardContent sx={{ p: 3 }}>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{ fontWeight: 600, color: "#1565c0" }}
+                            >
+                              3. Не вимагайте радикальних обіцянок
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ mt: 1 }}
+                            >
+                              Запропонуйте кроки без тиску — наприклад, просто
+                              пройти онлайн-тест або анонімно проконсультуватися
+                              з лікарем.
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Card variant="outlined" sx={{ height: "100%" }}>
+                          <CardContent sx={{ p: 3 }}>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{ fontWeight: 600, color: "#1565c0" }}
+                            >
+                              4. Запропонуйте супровід
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              sx={{ mt: 1 }}
+                            >
+                              Допоможіть знайти спеціаліста, запишіть на прийом
+                              або поїдьте разом для підтримки.
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </Box>
+              )}
+            </Container>
+
+            {/* Footer */}
+            <Box
+              sx={{
+                bgcolor: "#2c3e50",
+                color: "#fff",
+                py: 4,
+                mt: 8,
+                textAlign: "center",
+              }}
+            >
+              <Container maxWidth="lg">
+                <Typography variant="body1" sx={{ opacity: 0.85 }}>
+                  Навчальний веб-ресурс для лекції у медичному інституті • Рання
+                  діагностика залежності
+                </Typography>
+              </Container>
+            </Box>
+          </ThemeProvider>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
